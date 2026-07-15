@@ -29,10 +29,10 @@
 ## Handoff
 
 - **Feature**: physics-teacher-slm
-- **Phase / Task**: Phase 0 (Environment Setup)
-- **Completed**: Phase 0 (Environment Setup) - T1 to T6 successfully executed, dependencies installed, pyenv and Python 3.12 configured, Ollama set up with qwen2.5:3b and nomic-embed-text models.
+- **Phase / Task**: Phase 1 (Data Pipeline) completed
+- **Completed**: Phase 1 (Data Pipeline) - verified PDFs (T7), extracted cleaned text to `data/processed/` (T8), and generated a 200-sample ChatML training dataset using local Ollama (T9). Unit tests created and passed successfully for both scripts.
 - **In-progress** (file:line): none
-- **Next step**: Start Phase 1 (Data Pipeline) - Import PDFs to `teacher_docs/` and run the extraction scripts.
+- **Next step**: Start Phase 2 (RAG Pipeline) - Build ChromaDB index using LlamaIndex and verify RAG query functionality.
 - **Blockers**: none
 - **Uncommitted files**: none
-- **Branch**: main
+- **Branch**: master
