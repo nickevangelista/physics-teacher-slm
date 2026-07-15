@@ -29,10 +29,10 @@
 ## Handoff
 
 - **Feature**: physics-teacher-slm
-- **Phase / Task**: Phase 1 (Data Pipeline) completed
-- **Completed**: Phase 1 (Data Pipeline) - verified PDFs (T7), extracted cleaned text to `data/processed/` (T8), and generated a 200-sample ChatML training dataset using local Ollama (T9). Unit tests created and passed successfully for both scripts.
+- **Phase / Task**: Phase 2 (RAG Pipeline) completed
+- **Completed**: Phase 2 (RAG Pipeline) - Updated default directories for indexing and database storage to data/processed and data/chroma_db. Built ChromaDB index containing 325 chunks (T10). Verified query engine functionality programmatically and through integration tests (T11). All 18 tests passing.
 - **In-progress** (file:line): none
-- **Next step**: Start Phase 2 (RAG Pipeline) - Build ChromaDB index using LlamaIndex and verify RAG query functionality.
+- **Next step**: Start Phase 3 (Fine-Tuning QLoRA) - Run fine-tuning on the RTX 3050 and export GGUF model.
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: master
