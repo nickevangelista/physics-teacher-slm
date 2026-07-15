@@ -262,8 +262,8 @@ T15 → T16
 - **Requirement**: DEPLOY-01
 - **Tools**: CLI
 - **Done when**:
-  - [ ] `ollama create physics-teacher -f models/Modelfile` succeeds.
-  - [ ] `ollama list` shows `physics-teacher`.
+  - [x] `ollama create physics-teacher -f models/Modelfile` succeeds.
+  - [x] `ollama list` shows `physics-teacher`.
 - **Tests**: none
 - **Gate**: build
 
