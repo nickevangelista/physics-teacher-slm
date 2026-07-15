@@ -29,10 +29,10 @@
 ## Handoff
 
 - **Feature**: physics-teacher-slm
-- **Phase / Task**: Phase 2 (RAG Pipeline) completed
-- **Completed**: Phase 2 (RAG Pipeline) - Updated default directories for indexing and database storage to data/processed and data/chroma_db. Built ChromaDB index containing 325 chunks (T10). Verified query engine functionality programmatically and through integration tests (T11). All 18 tests passing.
+- **Phase / Task**: Phase 3 (Fine-Tuning QLoRA) completed
+- **Completed**: Phase 3 (Fine-Tuning QLoRA) - Resolved fp16/bf16 precision configuration error. Executed QLoRA fine-tuning with Unsloth on the physics dataset (202 examples) for 1 epoch. Saved LoRA adapters to `models/physics_model_lora/` (commit `9366d9dad73f6b4d3725b84c8d506be368a4fb52`). Exported the fine-tuned model to GGUF Q4_K_M format under `models/physics_model_gguf/` (commit `83aa08a4ec99c54625b8b939f50e82c5f1fa70b9`). All 18 integration/unit tests continue to pass.
 - **In-progress** (file:line): none
-- **Next step**: Start Phase 3 (Fine-Tuning QLoRA) - Run fine-tuning on the RTX 3050 and export GGUF model.
+- **Next step**: Start Phase 4 (Deploy) - Register the exported GGUF model in local Ollama as `physics-teacher` using `models/Modelfile`.
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: master

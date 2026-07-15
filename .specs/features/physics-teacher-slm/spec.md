@@ -131,12 +131,12 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | ENV-01 | P1: Environment & Base Setup | Design | Completed |
 | ENV-02 | P1: Environment & Base Setup | Design | Completed |
 | ENV-03 | P1: Environment & Base Setup | Design | Completed |
-| DATA-01 | P1: Data Pipeline & Extraction | Design | Pending |
-| DATA-02 | P1: Data Pipeline & Extraction | Design | Pending |
-| RAG-01 | P1: RAG Pipeline | Design | Pending |
-| RAG-02 | P1: RAG Pipeline | Design | Pending |
-| TRAIN-01 | P1: QLoRA Fine-Tuning | Design | Pending |
-| TRAIN-02 | P1: QLoRA Fine-Tuning | Design | Pending |
+| DATA-01 | P1: Data Pipeline & Extraction | Design | Completed |
+| DATA-02 | P1: Data Pipeline & Extraction | Design | Completed |
+| RAG-01 | P1: RAG Pipeline | Design | Completed |
+| RAG-02 | P1: RAG Pipeline | Design | Completed |
+| TRAIN-01 | P1: QLoRA Fine-Tuning | Design | Completed |
+| TRAIN-02 | P1: QLoRA Fine-Tuning | Design | Completed |
 | DEPLOY-01 | P1: Deployment & UI | Design | Pending |
 | UI-01 | P1: Deployment & UI | Design | Pending |
 
