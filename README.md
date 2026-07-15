@@ -1,6 +1,6 @@
-# 🧲 Professor de Física IA — Physics Teacher SLM
+# 🧲 Physics Teacher AI — Physics Teacher SLM
 
-> Assistente inteligente de Física baseado em SLM (Small Language Model) com RAG, fine-tuning local via QLoRA, e interface web — 100% local e privado.
+> An intelligent Physics assistant based on a SLM (Small Language Model) with RAG, local fine-tuning via QLoRA, and a web interface — 100% local and private.
 
 [![Python 3.12](https://img.shields.io/badge/Python-3.12-blue.svg)](https://python.org)
 [![Qwen 2.5 3B](https://img.shields.io/badge/Model-Qwen%202.5%203B-green.svg)](https://huggingface.co/Qwen)
@@ -8,54 +8,54 @@
 
 ---
 
-## 📋 Sobre o Projeto
+## 📋 About the Project
 
-O **Professor de Física IA** é um sistema completo que combina:
+**Physics Teacher AI** is a complete system that combines:
 
-- **Fine-tuning local** de um SLM (Qwen 2.5 3B) com QLoRA via Unsloth, treinado em materiais didáticos de Física
-- **RAG (Retrieval-Augmented Generation)** com LlamaIndex + ChromaDB para respostas contextualizadas
-- **Interface web moderna** com Gradio para interação natural em Português
+- **Local fine-tuning** of a SLM (Qwen 2.5 3B) with QLoRA via Unsloth, trained on Physics teaching materials
+- **RAG (Retrieval-Augmented Generation)** with LlamaIndex + ChromaDB for context-aware responses
+- **Modern web interface** with Gradio for natural interaction in Portuguese
 
-O objetivo é criar um assistente capaz de:
-- 📖 Explicar conceitos de Física de forma didática
-- 📝 Gerar questões de prova no formato do Ensino Médio e Superior brasileiro
-- 🔬 Resolver problemas passo a passo
-- 📚 Responder com base em materiais de referência (livros, apostilas)
+The goal is to create an assistant capable of:
+- 📖 Explaining Physics concepts in a didactic way
+- 📝 Generating exam questions at high school and university level
+- 🔬 Solving problems step by step
+- 📚 Answering based on reference materials (textbooks, lecture notes)
 
 ---
 
-## 🏗️ Arquitetura
+## 🏗️ Architecture
 
 ```mermaid
 graph TB
-    subgraph Interface["🖥️ Interface Web"]
+    subgraph Interface["🖥️ Web Interface"]
         UI["Gradio Chat UI<br/>:7860"]
     end
 
     subgraph RAG["📚 RAG Pipeline"]
-        PDF["PDFs de Física"]
-        PROC["Processamento<br/>(PyMuPDF)"]
+        PDF["Physics PDFs"]
+        PROC["Processing<br/>(PyMuPDF)"]
         EMB["Embeddings<br/>(nomic-embed-text)"]
         CHROMA["ChromaDB<br/>(Vector Store)"]
         QE["Query Engine<br/>(LlamaIndex)"]
     end
 
-    subgraph Inference["🤖 Inferência"]
+    subgraph Inference["🤖 Inference"]
         OLLAMA["Ollama Server<br/>:11434"]
         MODEL["Qwen 2.5 3B<br/>(Q4_K_M)"]
     end
 
     subgraph Training["🎯 Fine-tuning"]
-        DATA["Dataset JSONL<br/>(ChatML/ShareGPT)"]
+        DATA["JSONL Dataset<br/>(ChatML/ShareGPT)"]
         QLORA["QLoRA Training<br/>(Unsloth)"]
         GGUF["Export GGUF<br/>(Q4_K_M)"]
     end
 
-    UI -->|"Pergunta"| QE
-    QE -->|"Busca contexto"| CHROMA
-    QE -->|"Prompt + Contexto"| OLLAMA
+    UI -->|"Question"| QE
+    QE -->|"Context search"| CHROMA
+    QE -->|"Prompt + Context"| OLLAMA
     OLLAMA --> MODEL
-    OLLAMA -->|"Resposta"| UI
+    OLLAMA -->|"Answer"| UI
 
     PDF --> PROC --> EMB --> CHROMA
 
@@ -69,145 +69,145 @@ graph TB
 
 ---
 
-## 💻 Pré-requisitos
+## 💻 Prerequisites
 
 ### Hardware
-| Componente | Mínimo | Recomendado |
-|-----------|--------|-------------|
-| GPU | NVIDIA com 4GB VRAM | RTX 3050+ |
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| GPU | NVIDIA with 4GB VRAM | RTX 3050+ |
 | RAM | 8GB | 16GB |
-| Disco | 10GB livres | 20GB |
+| Disk | 10GB free | 20GB |
 
 ### Software
-- **SO:** Ubuntu (WSL2 no Windows) ou Linux nativo
+- **OS:** Ubuntu (WSL2 on Windows) or native Linux
 - **Python:** 3.12 (via pyenv)
 - **CUDA:** 12.1+
-- **Ollama:** Última versão
+- **Ollama:** Latest version
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone o repositório
+### 1. Clone the repository
 
 ```bash
-git clone https://github.com/seu-usuario/physics-teacher-slm.git
+git clone https://github.com/nickevangelista/physics-teacher-slm.git
 cd physics-teacher-slm
 ```
 
-### 2. Execute o setup automático
+### 2. Run the automatic setup
 
 ```bash
 bash scripts/setup_env.sh
 ```
 
-Este script instala automaticamente:
+This script automatically installs:
 - pyenv + Python 3.12
-- Virtual environment com todas as dependências
-- PyTorch com CUDA 12.1
-- Ollama + modelos base (Qwen 2.5 3B + nomic-embed-text)
+- Virtual environment with all dependencies
+- PyTorch with CUDA 12.1
+- Ollama + base models (Qwen 2.5 3B + nomic-embed-text)
 
-### 3. Ative o ambiente e inicie
+### 3. Activate the environment and start
 
 ```bash
 source .venv/bin/activate
-ollama serve &              # Inicia o Ollama (se não estiver rodando)
-python -m app.chat_ui       # Abre a interface web em http://localhost:7860
+ollama serve &              # Start Ollama (if not already running)
+python -m app.chat_ui       # Open the web interface at http://localhost:7860
 ```
 
 ---
 
-## 📁 Estrutura do Projeto
+## 📁 Project Structure
 
 ```
 physics-teacher-slm/
 ├── app/
 │   ├── __init__.py
-│   └── chat_ui.py              # Interface web Gradio
+│   └── chat_ui.py              # Gradio web interface
 ├── data/
-│   ├── raw/                    # PDFs e materiais originais
-│   ├── processed/              # Dados processados
-│   └── chroma_db/              # Banco vetorial ChromaDB
+│   ├── raw/                    # Original PDFs and materials
+│   ├── processed/              # Processed data
+│   └── chroma_db/              # ChromaDB vector store
 ├── models/
 │   ├── Modelfile               # Ollama Modelfile
-│   └── physics_model_gguf/     # Modelo GGUF exportado
+│   └── physics_model_gguf/     # Exported GGUF model
 ├── rag/
 │   ├── __init__.py
-│   ├── ingest.py               # Pipeline de ingestão de documentos
-│   └── query_engine.py         # Motor de consulta RAG
+│   ├── ingest.py               # Document ingestion pipeline
+│   └── query_engine.py         # RAG query engine
 ├── scripts/
 │   ├── __init__.py
-│   ├── setup_env.sh            # Setup automático do ambiente
-│   ├── prepare_dataset.py      # Preparação do dataset de treino
-│   └── train_qlora.py          # Script de fine-tuning QLoRA
-├── notebooks/                  # Jupyter notebooks para experimentação
-├── logs/                       # Logs de treinamento e execução
-├── requirements.txt            # Dependências Python
-├── README.md                   # Este arquivo
+│   ├── setup_env.sh            # Automatic environment setup
+│   ├── prepare_dataset.py      # Training dataset preparation
+│   └── train_qlora.py          # QLoRA fine-tuning script
+├── notebooks/                  # Jupyter notebooks for experimentation
+├── logs/                       # Training and execution logs
+├── requirements.txt            # Python dependencies
+├── README.md                   # This file
 └── .gitignore
 ```
 
 ---
 
-## 📖 Uso Detalhado
+## 📖 Detailed Usage
 
-### 🤖 Interface de Chat
+### 🤖 Chat Interface
 
 ```bash
 python -m app.chat_ui
 ```
 
-Acesse `http://localhost:7860` no navegador. A interface oferece:
+Open `http://localhost:7860` in your browser. The interface offers:
 
-- **Chat com RAG:** Respostas baseadas nos seus materiais de Física
-- **Configurações:** Ajuste modelo, temperatura e top_k em tempo real
-- **Exemplos prontos:** Perguntas pré-definidas para testar
+- **Chat with RAG:** Responses grounded in your Physics materials
+- **Settings:** Adjust model, temperature and top_k in real time
+- **Ready-made examples:** Pre-defined questions for quick testing
 
-### 📚 Pipeline RAG
+### 📚 RAG Pipeline
 
-#### Ingestão de documentos
+#### Document ingestion
 
 ```bash
-# Coloque seus PDFs de Física em data/raw/
+# Place your Physics PDFs in data/raw/
 python -m rag.ingest
 ```
 
-#### Consulta via código
+#### Query via code
 
 ```python
-from rag.query_engine import get_query_engine
+from rag.query_engine import criar_query_engine
 
-engine = get_query_engine()
-response = engine.query("Explique a Segunda Lei de Newton")
+engine = criar_query_engine()
+response = engine.query("Explain Newton's Second Law")
 print(response)
 ```
 
-### 🎯 Fine-tuning com QLoRA
+### 🎯 Fine-tuning with QLoRA
 
-#### Preparar dataset
+#### Prepare the dataset
 
 ```bash
-# O dataset deve estar em formato ChatML/ShareGPT JSONL
+# Dataset must be in ChatML/ShareGPT JSONL format
 python scripts/prepare_dataset.py
 ```
 
-#### Treinar o modelo
+#### Train the model
 
 ```bash
 python scripts/train_qlora.py
 ```
 
-**Configurações otimizadas para RTX 3050 (4GB VRAM):**
-- Quantização: 4-bit (QLoRA)
+**Settings optimised for RTX 3050 (4GB VRAM):**
+- Quantisation: 4-bit (QLoRA)
 - Batch size: 1
 - Gradient accumulation: 16
 - Max sequence length: 2048
 - fp16: True
 
-#### Exportar e registrar no Ollama
+#### Export and register in Ollama
 
 ```bash
-# Após o treino, o modelo GGUF é salvo em models/physics_model_gguf/
+# After training, the GGUF model is saved in models/physics_model_gguf/
 cd models/
 ollama create physics-teacher -f Modelfile
 ollama run physics-teacher
@@ -215,75 +215,75 @@ ollama run physics-teacher
 
 ---
 
-## ⚙️ Configuração
+## ⚙️ Configuration
 
-### Variáveis de ambiente (opcionais)
+### Environment variables (optional)
 
 ```bash
-export OLLAMA_HOST="http://localhost:11434"  # URL do Ollama
-export CUDA_VISIBLE_DEVICES="0"              # GPU a usar
+export OLLAMA_HOST="http://localhost:11434"  # Ollama URL
+export CUDA_VISIBLE_DEVICES="0"              # GPU to use
 ```
 
-### Parâmetros do modelo
+### Model parameters
 
-Ajuste no arquivo `models/Modelfile`:
+Adjust in `models/Modelfile`:
 
-| Parâmetro | Padrão | Descrição |
-|-----------|--------|-----------|
-| temperature | 0.7 | Criatividade (0.0-1.5) |
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| temperature | 0.7 | Creativity (0.0–1.5) |
 | top_p | 0.9 | Nucleus sampling |
-| top_k | 40 | Tokens candidatos |
-| num_ctx | 2048 | Janela de contexto |
+| top_k | 40 | Candidate tokens |
+| num_ctx | 2048 | Context window |
 
 ---
 
-## 🧪 Exemplos de Uso
+## 🧪 Usage Examples
 
 ```
-👤 Explique a Terceira Lei de Newton com exemplos do cotidiano.
+👤 Explain Newton's Third Law with everyday examples.
 
-🧲 A Terceira Lei de Newton, também conhecida como Lei da Ação e Reação,
-   afirma que: para toda força de ação existe uma força de reação,
-   de mesma intensidade e direção, mas em sentido oposto.
+🧲 Newton's Third Law, also known as the Law of Action and Reaction,
+   states that: for every action force there is a reaction force of
+   equal magnitude and direction, but opposite sense.
 
-   Exemplos do cotidiano:
-   1. Ao caminhar, seus pés empurram o chão para trás (ação)
-      e o chão empurra seus pés para frente (reação)...
+   Everyday examples:
+   1. When walking, your feet push the ground backwards (action)
+      and the ground pushes your feet forwards (reaction)...
 ```
 
 ---
 
-## 🔒 Privacidade
+## 🔒 Privacy
 
-Todo o processamento acontece **localmente na sua máquina**:
-- ✅ Nenhum dado enviado para servidores externos
-- ✅ Modelo roda via Ollama local
-- ✅ Embeddings gerados localmente
-- ✅ Banco vetorial armazenado no disco local
-
----
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para:
-
-1. Fazer fork do projeto
-2. Criar uma branch (`git checkout -b feature/minha-feature`)
-3. Commit suas mudanças (`git commit -m 'Adiciona minha feature'`)
-4. Push para a branch (`git push origin feature/minha-feature`)
-5. Abrir um Pull Request
+All processing happens **locally on your machine**:
+- ✅ No data sent to external servers
+- ✅ Model runs via local Ollama
+- ✅ Embeddings generated locally
+- ✅ Vector store stored on local disk
 
 ---
 
-## 📄 Licença
+## 🤝 Contributing
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+Contributions are welcome! Feel free to:
+
+1. Fork the project
+2. Create a branch (`git checkout -b feature/my-feature`)
+3. Commit your changes (`git commit -m 'Add my feature'`)
+4. Push to the branch (`git push origin feature/my-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
 
 <div align="center">
 
-**Feito com 🧲 para estudantes e professores de Física**
+**Made with 🧲 for Physics students and teachers**
 
 *Qwen 2.5 3B • Unsloth QLoRA • LlamaIndex • ChromaDB • Ollama • Gradio*
 
