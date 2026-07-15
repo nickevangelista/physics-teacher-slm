@@ -274,7 +274,7 @@ T15 → T16
 - **Requirement**: DEPLOY-01
 - **Tools**: CLI
 - **Done when**:
-  - [ ] Custom model replies in Portuguese in the specified teacher style.
+  - [x] Custom model replies in Portuguese in the specified teacher style.
 - **Tests**: none
 - **Gate**: build
 
