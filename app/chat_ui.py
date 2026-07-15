@@ -169,8 +169,8 @@ def try_load_rag_engine():
     Retorna None se o índice não existir ou houver erro.
     """
     try:
-        from rag.query_engine import get_query_engine  # noqa: F811
-        engine = get_query_engine()
+        from rag.query_engine import criar_query_engine
+        engine = criar_query_engine()
         logger.info("✅ RAG query engine carregado com sucesso.")
         return engine
     except ImportError:
