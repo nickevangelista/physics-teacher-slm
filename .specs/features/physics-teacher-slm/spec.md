@@ -138,7 +138,7 @@ Each requirement gets a unique ID for tracking across design, tasks, and validat
 | TRAIN-01 | P1: QLoRA Fine-Tuning | Design | Completed |
 | TRAIN-02 | P1: QLoRA Fine-Tuning | Design | Completed |
 | DEPLOY-01 | P1: Deployment & UI | Design | Completed |
-| UI-01 | P1: Deployment & UI | Design | Pending |
+| UI-01 | P1: Deployment & UI | Design | Completed |
 
 **Coverage:** 11 total, 0 mapped to tasks, 11 unmapped ⚠️
 
