@@ -29,10 +29,10 @@
 ## Handoff
 
 - **Feature**: physics-teacher-slm
-- **Phase / Task**: Specifying & Planning Complete
-- **Completed**: none
+- **Phase / Task**: Phase 0 (Environment Setup)
+- **Completed**: Phase 0 (Environment Setup) - T1 to T6 successfully executed, dependencies installed, pyenv and Python 3.12 configured, Ollama set up with qwen2.5:3b and nomic-embed-text models.
 - **In-progress** (file:line): none
-- **Next step**: Propose implementation plan and start executing Phase 0 (Environment Setup) after user approval.
-- **Blockers**: Waiting for user confirmation of the specs, design, tasks, and implementation plan.
+- **Next step**: Start Phase 1 (Data Pipeline) - Import PDFs to `teacher_docs/` and run the extraction scripts.
+- **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: main
