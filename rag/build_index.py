@@ -41,8 +41,8 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Constantes padrão
 # ---------------------------------------------------------------------------
-DEFAULT_DOCS_DIR = Path(__file__).resolve().parent.parent / "teacher_docs"
-DEFAULT_DB_DIR = Path(__file__).resolve().parent / "chroma_db"
+DEFAULT_DOCS_DIR = Path(__file__).resolve().parent.parent / "data" / "processed"
+DEFAULT_DB_DIR = Path(__file__).resolve().parent.parent / "data" / "chroma_db"
 EMBED_MODEL_NAME = "nomic-embed-text"
 OLLAMA_BASE_URL = "http://localhost:11434"
 CHUNK_SIZE = 512
@@ -187,7 +187,7 @@ def construir_indice(
     try:
         chroma_client.delete_collection(COLLECTION_NAME)
         logger.info("Coleção anterior '%s' removida para reconstrução", COLLECTION_NAME)
-    except ValueError:
+    except Exception:
         # Collection doesn't exist yet — that's fine
         pass
 
