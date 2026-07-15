@@ -145,9 +145,18 @@ def list_available_models() -> list[str]:
     return [FALLBACK_MODEL]
 
 
-def get_default_model(available: list[str]) -> str:
-    """Seleciona o modelo padrão: prioriza physics-teacher, senão qwen2.5:3b."""
-    for candidate in [DEFAULT_MODEL, FALLBACK_MODEL]:
+def get_default_base_model(available: list[str]) -> str:
+    """Seleciona o modelo base padrão: prioriza qwen2.5:3b, senão o que estiver disponível."""
+    for candidate in [FALLBACK_MODEL, DEFAULT_MODEL]:
+        for model in available:
+            if candidate in model:
+                return model
+    return available[0] if available else FALLBACK_MODEL
+
+
+def get_default_tuned_model(available: list[str]) -> str:
+    """Seleciona o modelo customizado padrão: prioriza physics-teacher, senão fallback."""
+    for candidate in [DEFAULT_MODEL, "physics-teacher-q8", FALLBACK_MODEL]:
         for model in available:
             if candidate in model:
                 return model
@@ -281,59 +290,83 @@ rag_engine = try_load_rag_engine()
 
 # ── Função principal de chat ─────────────────────────────────────────────────
 
-def chat_respond(
+def chat_respond_side_by_side(
     message: str,
-    history: list[dict],
-    model: str,
+    history_base: list[dict],
+    history_tuned: list[dict],
+    model_base: str,
+    model_tuned: str,
+    use_rag: bool,
     temperature: float,
     top_k: int,
-) -> Generator:
+) -> Generator[tuple[list[dict], list[dict], str], None, None]:
     """
-    Processa mensagem do usuário e retorna resposta em streaming.
-    Integra RAG quando disponível.
+    Processa mensagem do usuário e retorna resposta em streaming para ambos os chatbots.
+    Integra RAG no modelo tuned quando ativado.
     """
     if not message or not message.strip():
-        yield history, ""
+        yield history_base, history_tuned, ""
         return
 
     if not check_ollama_available():
-        history.append({"role": "user", "content": message})
-        history.append({
-            "role": "assistant",
-            "content": (
-                "❌ **Ollama não está rodando.**\n\n"
-                "Inicie o servidor com:\n```bash\nollama serve\n```"
-            ),
-        })
-        yield history, ""
+        error_msg = "❌ **Ollama não está rodando.**\n\nInicie o servidor com:\n```bash\nollama serve\n```"
+        history_base.append({"role": "user", "content": message})
+        history_base.append({"role": "assistant", "content": error_msg})
+        history_tuned.append({"role": "user", "content": message})
+        history_tuned.append({"role": "assistant", "content": error_msg})
+        yield history_base, history_tuned, ""
         return
 
-    # Adiciona mensagem do usuário ao histórico
-    history.append({"role": "user", "content": message})
+    # Adiciona mensagem do usuário ao histórico de ambos
+    history_base.append({"role": "user", "content": message})
+    history_tuned.append({"role": "user", "content": message})
 
     context_display = ""
 
-    if rag_engine is not None:
-        # Modo RAG: busca contexto e gera resposta aumentada
-        stream_gen, context_display = query_with_rag(
-            message, rag_engine, model, temperature, top_k
+    # Configura streams
+    # 1. Base Model
+    messages_base = [{"role": "system", "content": "Você é um assistente de IA útil e geral."}]
+    # Limita histórico base para não estourar contexto
+    messages_base.extend(history_base[-10:])
+    stream_gen_base = query_ollama_stream(messages_base, model_base, temperature, top_k)
+
+    # 2. Tuned Model (com RAG opcional)
+    if use_rag and rag_engine is not None:
+        stream_gen_tuned, context_display = query_with_rag(
+            message, rag_engine, model_tuned, temperature, top_k
         )
     else:
-        # Modo direto: envia histórico completo para o Ollama
-        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-        # Inclui últimas N mensagens do histórico para contexto conversacional
-        recent = history[-10:]  # Limita para não estourar contexto
-        messages.extend(recent)
-        stream_gen = query_ollama_stream(messages, model, temperature, top_k)
+        messages_tuned = [{"role": "system", "content": SYSTEM_PROMPT}]
+        messages_tuned.extend(history_tuned[-10:])
+        stream_gen_tuned = query_ollama_stream(messages_tuned, model_tuned, temperature, top_k)
+        context_display = "_RAG está desativado._" if not use_rag else "_Índice RAG não carregado._"
 
-    # Streaming da resposta
-    assistant_message = ""
-    history.append({"role": "assistant", "content": ""})
+    # Inicializa respostas do assistente nos históricos
+    history_base.append({"role": "assistant", "content": ""})
+    history_tuned.append({"role": "assistant", "content": ""})
 
-    for token in stream_gen:
-        assistant_message += token
-        history[-1]["content"] = assistant_message
-        yield history, context_display
+    base_text = ""
+    tuned_text = ""
+    base_done = False
+    tuned_done = False
+
+    # Consome os streams em paralelo/intercalados para visualização side-by-side
+    while not (base_done and tuned_done):
+        if not base_done:
+            try:
+                token = next(stream_gen_base)
+                base_text += token
+                history_base[-1]["content"] = base_text
+            except StopIteration:
+                base_done = True
+        if not tuned_done:
+            try:
+                token = next(stream_gen_tuned)
+                tuned_text += token
+                history_tuned[-1]["content"] = tuned_text
+            except StopIteration:
+                tuned_done = True
+        yield history_base, history_tuned, context_display
 
 
 # ── Construção da UI ─────────────────────────────────────────────────────────
@@ -342,7 +375,8 @@ def build_ui() -> gr.Blocks:
     """Constrói e retorna a interface Gradio."""
 
     available_models = list_available_models()
-    default_model = get_default_model(available_models)
+    default_base_model = get_default_base_model(available_models)
+    default_tuned_model = get_default_tuned_model(available_models)
     rag_status = "🟢 RAG ativo" if rag_engine else "🟡 RAG inativo (sem índice)"
 
     with gr.Blocks(
@@ -378,20 +412,28 @@ def build_ui() -> gr.Blocks:
                     elem_classes=["footer-text"],
                 )
 
-                # Área do chatbot
-                chatbot = gr.Chatbot(
-                    label="Conversa",
-                    type="messages",
-                    height=480,
-                    show_copy_button=True,
-                    avatar_images=(None, "🧲"),
-                    elem_classes=["chatbot-container"],
-                    placeholder=(
-                        "Olá! Sou seu Professor de Física IA. 🧲\n\n"
-                        "Pergunte-me sobre qualquer tópico de Física — "
-                        "de Mecânica a Física Quântica!"
-                    ),
-                )
+                # Área de chat side-by-side
+                with gr.Row():
+                    chatbot_base = gr.Chatbot(
+                        label="Modelo Base",
+                        height=480,
+                        avatar_images=(None, "🤖"),
+                        elem_classes=["chatbot-container"],
+                        placeholder=(
+                            "Olá! Sou o Modelo Base. 🤖\n\n"
+                            "Respondo a perguntas de Física de forma geral."
+                        ),
+                    )
+                    chatbot_tuned = gr.Chatbot(
+                        label="Professor de Física (Fine-tuned)",
+                        height=480,
+                        avatar_images=(None, "🧲"),
+                        elem_classes=["chatbot-container"],
+                        placeholder=(
+                            "Olá! Sou o seu Professor de Física IA. 🧲\n\n"
+                            "Explico conceitos no estilo do professor, usando a notação correta e buscando referências nos slides."
+                        ),
+                    )
 
                 # Accordion para contexto RAG recuperado
                 with gr.Accordion(
@@ -403,6 +445,13 @@ def build_ui() -> gr.Blocks:
                     rag_context_display = gr.Markdown(
                         value="_Envie uma pergunta para ver o contexto._"
                     )
+
+                # Checkbox para toggling RAG
+                use_rag_checkbox = gr.Checkbox(
+                    label="Ativar RAG (Busca de contexto nos slides do professor)" if rag_engine else "Ativar RAG (Desativado — Índice não encontrado em data/chroma_db/)",
+                    value=rag_engine is not None,
+                    interactive=rag_engine is not None,
+                )
 
                 # Área de input
                 with gr.Row():
@@ -431,7 +480,6 @@ def build_ui() -> gr.Blocks:
                     inputs=msg_input,
                     label="💡 Perguntas de exemplo",
                     examples_per_page=4,
-                    elem_classes=["examples-row"],
                 )
 
             # ── Aba Configurações ────────────────────────────────────────
@@ -439,11 +487,18 @@ def build_ui() -> gr.Blocks:
                 gr.Markdown("### Parâmetros do Modelo")
 
                 with gr.Group():
-                    model_dropdown = gr.Dropdown(
+                    model_base_dropdown = gr.Dropdown(
                         choices=available_models,
-                        value=default_model,
-                        label="🤖 Modelo",
-                        info="Selecione o modelo Ollama para inferência",
+                        value=default_base_model,
+                        label="🤖 Modelo Base (Esquerda)",
+                        info="Selecione o modelo Ollama de base",
+                        interactive=True,
+                    )
+                    model_tuned_dropdown = gr.Dropdown(
+                        choices=available_models,
+                        value=default_tuned_model,
+                        label="🧲 Modelo Professor de Física (Direita)",
+                        info="Selecione o modelo Ollama fine-tuned",
                         interactive=True,
                     )
 
@@ -483,7 +538,8 @@ def build_ui() -> gr.Blocks:
                         value=(
                             f"- **Ollama:** {'🟢 Online' if check_ollama_available() else '🔴 Offline'}\n"
                             f"- **RAG:** {rag_status}\n"
-                            f"- **Modelo padrão:** `{default_model}`\n"
+                            f"- **Modelo base padrão:** `{default_base_model}`\n"
+                            f"- **Modelo customizado padrão:** `{default_tuned_model}`\n"
                             f"- **Modelos disponíveis:** {len(available_models)}"
                         )
                     )
@@ -509,9 +565,18 @@ def build_ui() -> gr.Blocks:
 
         # Enviar mensagem (botão ou Enter)
         submit_args = dict(
-            fn=chat_respond,
-            inputs=[msg_input, chatbot, model_dropdown, temperature_slider, top_k_slider],
-            outputs=[chatbot, rag_context_display],
+            fn=chat_respond_side_by_side,
+            inputs=[
+                msg_input,
+                chatbot_base,
+                chatbot_tuned,
+                model_base_dropdown,
+                model_tuned_dropdown,
+                use_rag_checkbox,
+                temperature_slider,
+                top_k_slider,
+            ],
+            outputs=[chatbot_base, chatbot_tuned, rag_context_display],
         )
 
         msg_input.submit(**submit_args, show_progress="minimal").then(
@@ -524,41 +589,71 @@ def build_ui() -> gr.Blocks:
 
         # Limpar conversa
         clear_btn.click(
-            fn=lambda: ([], "_Envie uma pergunta para ver o contexto._"),
-            outputs=[chatbot, rag_context_display],
+            fn=lambda: ([], [], "_Envie uma pergunta para ver o contexto._"),
+            outputs=[chatbot_base, chatbot_tuned, rag_context_display],
         )
 
         # Regenerar última resposta
-        def retry_last(history, model, temperature, top_k):
-            """Remove a última resposta e regenera."""
-            if len(history) < 2:
-                yield history, ""
+        def retry_last_side_by_side(
+            history_base,
+            history_tuned,
+            model_base,
+            model_tuned,
+            use_rag,
+            temperature,
+            top_k,
+        ):
+            """Remove a última resposta de ambos os chatbots e regenera."""
+            if len(history_base) < 2 or len(history_tuned) < 2:
+                yield history_base, history_tuned, ""
                 return
 
-            # Pega a última mensagem do usuário
-            last_user_msg = history[-2]["content"]
-            # Remove a última troca (user + assistant)
-            history = history[:-2]
+            # Pega a última mensagem do usuário (deve ser igual para ambos)
+            last_user_msg = history_base[-2]["content"]
+            # Remove a última troca (user + assistant) de ambos
+            history_base = history_base[:-2]
+            history_tuned = history_tuned[:-2]
 
             # Regenera
-            yield from chat_respond(last_user_msg, history, model, temperature, top_k)
+            yield from chat_respond_side_by_side(
+                last_user_msg,
+                history_base,
+                history_tuned,
+                model_base,
+                model_tuned,
+                use_rag,
+                temperature,
+                top_k,
+            )
 
         retry_btn.click(
-            fn=retry_last,
-            inputs=[chatbot, model_dropdown, temperature_slider, top_k_slider],
-            outputs=[chatbot, rag_context_display],
+            fn=retry_last_side_by_side,
+            inputs=[
+                chatbot_base,
+                chatbot_tuned,
+                model_base_dropdown,
+                model_tuned_dropdown,
+                use_rag_checkbox,
+                temperature_slider,
+                top_k_slider,
+            ],
+            outputs=[chatbot_base, chatbot_tuned, rag_context_display],
             show_progress="minimal",
         )
 
         # Atualizar lista de modelos
         def refresh_models():
             models = list_available_models()
-            default = get_default_model(models)
-            return gr.Dropdown(choices=models, value=default)
+            default_base = get_default_base_model(models)
+            default_tuned = get_default_tuned_model(models)
+            return (
+                gr.Dropdown(choices=models, value=default_base),
+                gr.Dropdown(choices=models, value=default_tuned),
+            )
 
         refresh_models_btn.click(
             fn=refresh_models,
-            outputs=model_dropdown,
+            outputs=[model_base_dropdown, model_tuned_dropdown],
         )
 
     return app
