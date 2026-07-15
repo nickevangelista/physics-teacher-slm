@@ -236,7 +236,7 @@ T15 → T16
 - **Requirement**: TRAIN-01
 - **Tools**: CLI
 - **Done when**:
-  - [ ] QLoRA fine-tuning executes successfully on 4GB VRAM without memory errors.
+  - [x] QLoRA fine-tuning executes successfully on 4GB VRAM without memory errors.
 - **Tests**: none
 - **Gate**: build
 
@@ -247,7 +247,7 @@ T15 → T16
 - **Requirement**: TRAIN-02
 - **Tools**: CLI
 - **Done when**:
-  - [ ] Valid `.gguf` file exists in `models/physics_model_gguf/`.
+  - [x] Valid `.gguf` file exists in `models/physics_model_gguf/`.
 - **Tests**: none
 - **Gate**: build
 
