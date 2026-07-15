@@ -1,31 +1,61 @@
+# =============================================================================
 # Virtual Environment
+# =============================================================================
 .venv/
 venv/
 ENV/
 
+# =============================================================================
 # Python Cache
+# =============================================================================
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.pyx.md5
 .ipynb_checkpoints/
 
-# Temporary files
+# =============================================================================
+# Confidential / Proprietary Content
+# =============================================================================
+# Teacher source documents (PDFs, slides, notes - not for public distribution)
+teacher_docs/
+data/raw/
+data/processed/
+
+# Project PDF (may contain proprietary content)
+*.pdf
+
+# Dataset and vector index built from proprietary content
+data/chroma_db/
+data/physics_dataset.jsonl
+data/.prepare_progress.json
+
+# =============================================================================
+# Model Weights & Artifacts (large binary files)
+# =============================================================================
+models/physics_model_lora/
+models/physics_model_gguf/
+*.gguf
+*.safetensors
+*.bin
+unsloth_compiled_cache/
+
+# =============================================================================
+# Temporary & Build Files
+# =============================================================================
 .tmp/
 tmp/
 *.log
+.gradio/
 
-# Project-specific Data
-data/processed/
-data/chroma_db/
-data/physics_dataset.jsonl
-data/raw/
-
-# Model exports
-models/physics_model_gguf/
-*.gguf
-
-# IDE Configurations (keep agents configs if desired, but standard IDE folders are ignored)
+# =============================================================================
+# IDE & AI Agent Configurations (local/personal)
+# =============================================================================
 .idea/
 .vscode/
 .DS_Store
+.agent/
+.claude/
+.cursor/
+.windsurf/
