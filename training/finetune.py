@@ -79,8 +79,8 @@ DEFAULT_CONFIG = {
     "seed": 42,
     "logging_steps": 5,
     "save_steps": 50,
-    "fp16": True,     # RTX 3050 NÃO suporta bf16 nativamente
-    "bf16": False,
+    "fp16": False,
+    "bf16": True,
 }
 
 # System prompt padrão (deve ser o mesmo usado na preparação do dataset)
@@ -110,7 +110,7 @@ def verificar_cuda():
         sys.exit(1)
 
     gpu_name = torch.cuda.get_device_name(0)
-    vram_total = torch.cuda.get_device_properties(0).total_mem / (1024 ** 3)
+    vram_total = torch.cuda.get_device_properties(0).total_memory / (1024 ** 3)
     vram_livre = torch.cuda.mem_get_info()[0] / (1024 ** 3)
 
     logger.info(f"🖥️  GPU: {gpu_name}")
