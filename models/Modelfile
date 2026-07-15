@@ -1,0 +1,33 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# Ollama Modelfile — Professor de Física IA
+# ═══════════════════════════════════════════════════════════════════════════
+# Uso:
+#   cd models/
+#   ollama create physics-teacher -f Modelfile
+#
+# Após criado:
+#   ollama run physics-teacher
+# ═══════════════════════════════════════════════════════════════════════════
+
+# Modelo base: Qwen 2.5 3B fine-tuned, quantizado em Q4_K_M via Unsloth
+FROM ./physics_model_gguf/unsloth.Q4_K_M.gguf
+
+# ── Parâmetros de geração ────────────────────────────────────────────────
+PARAMETER temperature 0.7
+PARAMETER top_p 0.9
+PARAMETER top_k 40
+PARAMETER num_ctx 2048
+PARAMETER repeat_penalty 1.1
+PARAMETER stop <|im_end|>
+PARAMETER stop <|im_start|>
+
+# ── Template ChatML (compatível com Qwen 2.5) ───────────────────────────
+TEMPLATE """<|im_start|>system
+{{ .System }}<|im_end|>
+<|im_start|>user
+{{ .Prompt }}<|im_end|>
+<|im_start|>assistant
+{{ .Response }}<|im_end|>"""
+
+# ── System Prompt padrão ─────────────────────────────────────────────────
+SYSTEM """Você é um professor de Física experiente e didático. Explique conceitos de forma clara, use exemplos práticos, e quando gerar questões de prova, siga o formato e nível de dificuldade típicos de provas de Ensino Médio/Superior."""

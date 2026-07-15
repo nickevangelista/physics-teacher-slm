@@ -1,0 +1,31 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# Temporary files
+.tmp/
+tmp/
+*.log
+
+# Project-specific Data
+data/processed/
+data/chroma_db/
+data/physics_dataset.jsonl
+data/raw/
+
+# Model exports
+models/physics_model_gguf/
+*.gguf
+
+# IDE Configurations (keep agents configs if desired, but standard IDE folders are ignored)
+.idea/
+.vscode/
+.DS_Store

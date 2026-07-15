@@ -1,0 +1,34 @@
+# ═══════════════════════════════════════════════════════════════════════════
+# Physics Teacher SLM — Dependências Python
+# ═══════════════════════════════════════════════════════════════════════════
+# Instale com: pip install -r requirements.txt
+# Nota: PyTorch com CUDA deve ser instalado separadamente (ver setup_env.sh)
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ── Fine-tuning (Unsloth + QLoRA) ────────────────────────────────────────
+unsloth
+transformers>=4.45.0
+peft>=0.12.0
+trl>=0.11.0
+datasets>=2.20.0
+accelerate>=0.33.0
+bitsandbytes>=0.43.0
+
+# ── RAG Pipeline (LlamaIndex + ChromaDB) ─────────────────────────────────
+llama-index-core>=0.11.0
+llama-index-llms-ollama>=0.3.0
+llama-index-embeddings-ollama>=0.2.0
+llama-index-vector-stores-chroma>=0.2.0
+llama-index-readers-file>=0.2.0
+chromadb>=0.5.0
+
+# ── Processamento de Documentos ──────────────────────────────────────────
+pymupdf>=1.24.0
+
+# ── Interface Web ────────────────────────────────────────────────────────
+gradio>=4.0.0
+
+# ── Utilitários ──────────────────────────────────────────────────────────
+pandas
+tqdm
+requests
