@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Constantes padrão
 # ---------------------------------------------------------------------------
-DEFAULT_DB_DIR = Path(__file__).resolve().parent / "chroma_db"
+DEFAULT_DB_DIR = Path(__file__).resolve().parent.parent / "data" / "chroma_db"
 DEFAULT_MODEL = "qwen2.5:3b"
 EMBED_MODEL_NAME = "nomic-embed-text"
 OLLAMA_BASE_URL = "http://localhost:11434"
