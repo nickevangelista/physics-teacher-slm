@@ -29,10 +29,10 @@
 ## Handoff
 
 - **Feature**: physics-teacher-slm
-- **Phase / Task**: Phase 4 (Deploy) completed
-- **Completed**: Phase 4 (Deploy) - Registered the fine-tuned model in Ollama. Fixed a GGUF template tag issue in `models/Modelfile` to prevent early termination. Re-exported the fine-tuned model to `q8_0` GGUF format as `models/physics_model_gguf/unsloth.Q8_0.gguf` to resolve Unsloth Q4_K_M quantization weight corruption. Successfully verified the model `physics-teacher` via Ollama API, getting coherent Portuguese responses in the teacher style.
+- **Phase / Task**: Phase 5 (Interface Web) completed
+- **Completed**: Phase 5 (Interface Web) - Refactored `app/chat_ui.py` to support side-by-side model comparison (Base vs Fine-tuned), a dynamic RAG search toggle checkbox, and parallel streamed output delivery. Created a suite of 9 integration tests in `tests/test_ui.py` verifying layout and connectivity states. Confirmed all 27 tests pass successfully, validated the UI features, and successfully verified test discrimination using manual fault injection.
 - **In-progress** (file:line): none
-- **Next step**: Start Phase 5 (Interface Web) - Launch and test the Gradio side-by-side chat UI `app/chat_ui.py`.
+- **Next step**: None (Feature fully implemented and validated)
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: master
