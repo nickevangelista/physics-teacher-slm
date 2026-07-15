@@ -7,7 +7,7 @@ Lê todos os PDFs de teacher_docs/, extrai texto preservando estrutura
 
 Uso:
     python scripts/extract_pdfs.py
-    python scripts/extract_pdfs.py --input teacher_docs/ --output data/raw/
+    python scripts/extract_pdfs.py --input teacher_docs/ --output data/processed/
 """
 
 import argparse
@@ -31,7 +31,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Diretórios padrão
 DEFAULT_INPUT_DIR = PROJECT_ROOT / "teacher_docs"
-DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "raw"
+DEFAULT_OUTPUT_DIR = PROJECT_ROOT / "data" / "processed"
 
 
 def limpar_texto(texto: str) -> str:
@@ -159,7 +159,8 @@ def extrair_texto_pdf(caminho_pdf: Path) -> dict:
     metadados = doc.metadata or {}
     textos_paginas = []
 
-    for num_pagina in range(len(doc)):
+    num_paginas = len(doc)
+    for num_pagina in range(num_paginas):
         try:
             pagina = doc[num_pagina]
 
@@ -191,7 +192,7 @@ def extrair_texto_pdf(caminho_pdf: Path) -> dict:
 
     return {
         "texto": texto_final,
-        "num_paginas": len(doc),
+        "num_paginas": num_paginas,
         "num_caracteres": len(texto_final),
         "metadados": metadados,
     }
