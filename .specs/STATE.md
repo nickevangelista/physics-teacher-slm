@@ -29,10 +29,10 @@
 ## Handoff
 
 - **Feature**: physics-teacher-slm
-- **Phase / Task**: Phase 3 (Fine-Tuning QLoRA) completed
-- **Completed**: Phase 3 (Fine-Tuning QLoRA) - Resolved fp16/bf16 precision configuration error. Executed QLoRA fine-tuning with Unsloth on the physics dataset (202 examples) for 1 epoch. Saved LoRA adapters to `models/physics_model_lora/` (commit `9366d9dad73f6b4d3725b84c8d506be368a4fb52`). Exported the fine-tuned model to GGUF Q4_K_M format under `models/physics_model_gguf/` (commit `83aa08a4ec99c54625b8b939f50e82c5f1fa70b9`). All 18 integration/unit tests continue to pass.
+- **Phase / Task**: Phase 4 (Deploy) completed
+- **Completed**: Phase 4 (Deploy) - Registered the fine-tuned model in Ollama. Fixed a GGUF template tag issue in `models/Modelfile` to prevent early termination. Re-exported the fine-tuned model to `q8_0` GGUF format as `models/physics_model_gguf/unsloth.Q8_0.gguf` to resolve Unsloth Q4_K_M quantization weight corruption. Successfully verified the model `physics-teacher` via Ollama API, getting coherent Portuguese responses in the teacher style.
 - **In-progress** (file:line): none
-- **Next step**: Start Phase 4 (Deploy) - Register the exported GGUF model in local Ollama as `physics-teacher` using `models/Modelfile`.
+- **Next step**: Start Phase 5 (Interface Web) - Launch and test the Gradio side-by-side chat UI `app/chat_ui.py`.
 - **Blockers**: none
 - **Uncommitted files**: none
 - **Branch**: master
