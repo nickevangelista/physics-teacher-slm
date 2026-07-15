@@ -2,7 +2,7 @@
 """
 prepare_dataset.py — Criação de pares instrução-resposta para fine-tuning.
 
-Lê textos extraídos de data/raw/, divide em chunks, e gera pares de
+Lê textos extraídos de data/processed/, divide em chunks, e gera pares de
 instrução-resposta no formato ShareGPT/ChatML para treinamento.
 
 Modos de operação:
@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # Diretórios e arquivos
-RAW_DIR = PROJECT_ROOT / "data" / "raw"
+RAW_DIR = PROJECT_ROOT / "data" / "processed"
 DATASET_FILE = PROJECT_ROOT / "data" / "physics_dataset.jsonl"
 PROGRESS_FILE = PROJECT_ROOT / "data" / ".prepare_progress.json"
 
@@ -74,34 +74,34 @@ TIPO_DISTRIBUICAO = {
 # Prompts para geração automática por tipo
 PROMPTS_GERACAO = {
     "conceito": (
-        "Com base no texto abaixo sobre Física, crie um par de pergunta e resposta "
-        "onde o aluno pede uma EXPLICAÇÃO CONCEITUAL sobre o tema principal. "
+        "Com base no texto abaixo sobre Física, crie 3 pares diferentes de pergunta e resposta "
+        "onde o aluno pede uma EXPLICAÇÃO CONCEITUAL sobre temas abordados no texto. "
         "A resposta deve ser didática, clara e completa.\n\n"
         "TEXTO:\n{texto}\n\n"
         "Responda EXATAMENTE neste formato JSON (sem markdown, sem ```json):\n"
-        '{{"pergunta": "...", "resposta": "..."}}'
+        '{{"pares": [{{"pergunta": "O que é o efeito fotoelétrico?", "resposta": "O efeito fotoelétrico é a emissão de elétrons por um material exposto à radiação eletromagnética de frequência adequada..."}}, {{"pergunta": "Como a radiação do corpo negro desafiou a física clássica?", "resposta": "A física clássica previa que a intensidade da radiação tenderia ao infinito para comprimentos de onda curtos (catástrofe do ultravioleta), o que foi resolvido pela hipótese dos quanta de Planck..."}}, {{"pergunta": "Qual a expressão matemática para a energia de um fóton?", "resposta": "A energia de um fóton é dada pela equação de Planck: E = h * f, onde h é a constante de Planck e f é a frequência..."}}]}}'
     ),
     "questao": (
-        "Com base no texto abaixo sobre Física, crie uma QUESTÃO DE PROVA "
-        "(múltipla escolha ou dissertativa) com a resposta correta explicada.\n\n"
+        "Com base no texto abaixo sobre Física, crie 3 QUESTÕES DE PROVA diferentes "
+        "(múltipla escolha ou dissertativa) com as respostas corretas explicadas.\n\n"
         "TEXTO:\n{texto}\n\n"
         "Responda EXATAMENTE neste formato JSON (sem markdown, sem ```json):\n"
-        '{{"pergunta": "...", "resposta": "..."}}'
+        '{{"pares": [{{"pergunta": "O que é o efeito fotoelétrico?", "resposta": "O efeito fotoelétrico é a emissão de elétrons por um material exposto à radiação eletromagnética de frequência adequada..."}}, {{"pergunta": "Como a radiação do corpo negro desafiou a física clássica?", "resposta": "A física clássica previa que a intensidade da radiação tenderia ao infinito para comprimentos de onda curtos (catástrofe do ultravioleta), o que foi resolvido pela hipótese dos quanta de Planck..."}}, {{"pergunta": "Qual a expressão matemática para a energia de um fóton?", "resposta": "A energia de um fóton é dada pela equação de Planck: E = h * f, onde h é a constante de Planck e f é a frequência..."}}]}}'
     ),
     "problema": (
-        "Com base no texto abaixo sobre Física, crie um PROBLEMA NUMÉRICO "
-        "com resolução passo a passo. Inclua dados, equações e cálculos.\n\n"
+        "Com base no texto abaixo sobre Física, crie 3 PROBLEMAS NUMÉRICOS diferentes "
+        "com resolução passo a passo. Inclua dados, equações e cálculos para cada um.\n\n"
         "TEXTO:\n{texto}\n\n"
         "Responda EXATAMENTE neste formato JSON (sem markdown, sem ```json):\n"
-        '{{"pergunta": "...", "resposta": "..."}}'
+        '{{"pares": [{{"pergunta": "O que é o efeito fotoelétrico?", "resposta": "O efeito fotoelétrico é a emissão de elétrons por um material exposto à radiação eletromagnética de frequência adequada..."}}, {{"pergunta": "Como a radiação do corpo negro desafiou a física clássica?", "resposta": "A física clássica previa que a intensidade da radiação tenderia ao infinito para comprimentos de onda curtos (catástrofe do ultravioleta), o que foi resolvido pela hipótese dos quanta de Planck..."}}, {{"pergunta": "Qual a expressão matemática para a energia de um fóton?", "resposta": "A energia de um fóton é dada pela equação de Planck: E = h * f, onde h é a constante de Planck e f é a frequência..."}}]}}'
     ),
     "definicao": (
-        "Com base no texto abaixo sobre Física, crie uma pergunta pedindo "
-        "a DEFINIÇÃO de um conceito ou grandeza física mencionada. "
+        "Com base no texto abaixo sobre Física, crie 3 perguntas diferentes pedindo "
+        "a DEFINIÇÃO de conceitos ou grandezas físicas mencionadas no texto. "
         "A resposta deve incluir definição, unidade SI e exemplos.\n\n"
         "TEXTO:\n{texto}\n\n"
         "Responda EXATAMENTE neste formato JSON (sem markdown, sem ```json):\n"
-        '{{"pergunta": "...", "resposta": "..."}}'
+        '{{"pares": [{{"pergunta": "O que é o efeito fotoelétrico?", "resposta": "O efeito fotoelétrico é a emissão de elétrons por um material exposto à radiação eletromagnética de frequência adequada..."}}, {{"pergunta": "Como a radiação do corpo negro desafiou a física clássica?", "resposta": "A física clássica previa que a intensidade da radiação tenderia ao infinito para comprimentos de onda curtos (catástrofe do ultravioleta), o que foi resolvido pela hipótese dos quanta de Planck..."}}, {{"pergunta": "Qual a expressão matemática para a energia de um fóton?", "resposta": "A energia de um fóton é dada pela equação de Planck: E = h * f, onde h é a constante de Planck e f é a frequência..."}}]}}'
     ),
 }
 
@@ -268,6 +268,7 @@ def chamar_ollama(
     modelo: str = DEFAULT_MODEL,
     temperatura: float = 0.7,
     timeout: int = 120,
+    formato_json: bool = False,
 ) -> Optional[str]:
     """
     Chama a API do Ollama para gerar texto.
@@ -279,6 +280,7 @@ def chamar_ollama(
         modelo: Nome do modelo no Ollama
         temperatura: Temperatura de geração
         timeout: Timeout em segundos
+        formato_json: Se True, força a resposta a ser em formato JSON
 
     Returns:
         Texto gerado ou None em caso de erro
@@ -300,6 +302,9 @@ def chamar_ollama(
             "num_predict": 1024,
         },
     }
+
+    if formato_json:
+        payload["format"] = "json"
 
     dados = json.dumps(payload).encode("utf-8")
     req = urllib.request.Request(
@@ -358,17 +363,23 @@ def verificar_ollama(modelo: str = DEFAULT_MODEL) -> bool:
         return False
 
 
-def extrair_json_da_resposta(resposta: str) -> Optional[dict]:
+def extrair_json_da_resposta(resposta: str) -> Optional[list[dict]]:
     """
-    Tenta extrair um objeto JSON de uma resposta do modelo,
-    mesmo que contenha texto extra ou markdown.
+    Tenta extrair objetos JSON de uma resposta do modelo,
+    mesmo que contenha texto extra ou markdown. Retorna uma lista de dicts.
     """
     if not resposta:
         return None
 
     # Tenta parse direto
     try:
-        return json.loads(resposta.strip())
+        obj = json.loads(resposta.strip())
+        if isinstance(obj, list):
+            return obj
+        if isinstance(obj, dict):
+            if "pares" in obj and isinstance(obj["pares"], list):
+                return obj["pares"]
+            return [obj]
     except json.JSONDecodeError:
         pass
 
@@ -376,15 +387,29 @@ def extrair_json_da_resposta(resposta: str) -> Optional[dict]:
     match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", resposta, re.DOTALL)
     if match:
         try:
-            return json.loads(match.group(1).strip())
+            obj = json.loads(match.group(1).strip())
+            if isinstance(obj, list):
+                return obj
+            if isinstance(obj, dict):
+                if "pares" in obj and isinstance(obj["pares"], list):
+                    return obj["pares"]
+                return [obj]
+        except json.JSONDecodeError:
+            pass
+
+    # Tenta encontrar um array JSON na resposta
+    match_array = re.search(r"\[\s*\{.*\}\s*\]", resposta, re.DOTALL)
+    if match_array:
+        try:
+            return json.loads(match_array.group(0))
         except json.JSONDecodeError:
             pass
 
     # Tenta encontrar um objeto JSON na resposta
-    match = re.search(r"\{[^{}]*\"pergunta\"[^{}]*\"resposta\"[^{}]*\}", resposta, re.DOTALL)
-    if match:
+    match_obj = re.search(r"\{[^{}]*\"pergunta\"[^{}]*\"resposta\"[^{}]*\}", resposta, re.DOTALL)
+    if match_obj:
         try:
-            return json.loads(match.group(0))
+            return [json.loads(match_obj.group(0))]
         except json.JSONDecodeError:
             pass
 
@@ -594,7 +619,7 @@ def modo_automatico(
         )
 
         # Chama Ollama
-        resposta_raw = chamar_ollama(prompt, modelo, temperatura)
+        resposta_raw = chamar_ollama(prompt, modelo, temperatura, formato_json=True)
 
         if not resposta_raw:
             falhas_consecutivas += 1
@@ -603,9 +628,9 @@ def modo_automatico(
             continue
 
         # Extrai JSON da resposta
-        par = extrair_json_da_resposta(resposta_raw)
+        pares = extrair_json_da_resposta(resposta_raw)
 
-        if not par or "pergunta" not in par or "resposta" not in par:
+        if not pares:
             falhas_consecutivas += 1
             logger.warning(
                 f"  ⚠ Resposta inválida (falha {falhas_consecutivas}/{max_falhas}): "
@@ -614,28 +639,36 @@ def modo_automatico(
             time.sleep(1)
             continue
 
-        # Validação básica de qualidade
-        if len(par["pergunta"]) < 10 or len(par["resposta"]) < 20:
-            logger.warning("  ⚠ Par muito curto, pulando.")
-            continue
+        validos = 0
+        for par in pares:
+            if not isinstance(par, dict) or "pergunta" not in par or "resposta" not in par:
+                continue
 
-        # Cria e salva o exemplo
-        exemplo = criar_exemplo_sharegpt(par["pergunta"], par["resposta"])
-        salvar_exemplo(exemplo)
+            # Validação básica de qualidade
+            if len(par["pergunta"]) < 10 or len(par["resposta"]) < 20:
+                continue
 
-        progresso["chunks_processados"].append(chunk_id)
-        progresso["contagem_tipos"][tipo] = (
-            progresso["contagem_tipos"].get(tipo, 0) + 1
-        )
-        progresso["total_exemplos"] += 1
-        salvar_progresso(progresso)
+            # Cria e salva o exemplo
+            exemplo = criar_exemplo_sharegpt(par["pergunta"], par["resposta"])
+            salvar_exemplo(exemplo)
 
-        falhas_consecutivas = 0  # Reset em sucesso
+            progresso["contagem_tipos"][tipo] = (
+                progresso["contagem_tipos"].get(tipo, 0) + 1
+            )
+            progresso["total_exemplos"] += 1
+            validos += 1
 
-        logger.info(
-            f"  ✅ #{progresso['total_exemplos']} [{tipo}] "
-            f"P: {par['pergunta'][:60]}..."
-        )
+        if validos > 0:
+            progresso["chunks_processados"].append(chunk_id)
+            salvar_progresso(progresso)
+            falhas_consecutivas = 0  # Reset em sucesso
+            logger.info(
+                f"  ✅ #{progresso['total_exemplos']} [{tipo}] "
+                f"Gerados {validos} exemplos com sucesso de '{nome_arquivo}'."
+            )
+        else:
+            falhas_consecutivas += 1
+            logger.warning("  ⚠ Nenhum par válido extraído desta resposta.")
 
         # Pausa breve para não sobrecarregar
         time.sleep(0.5)
