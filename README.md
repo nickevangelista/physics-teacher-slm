@@ -12,6 +12,8 @@
 https://github.com/user-attachments/assets/e00d7af3-5b76-4a6f-837c-490c9f321969
 
 
+---
+
 ## 📋 About the Project
 
 **Physics Teacher AI** is a complete system that combines:
